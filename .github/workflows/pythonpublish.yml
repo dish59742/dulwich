@@ -47,8 +47,45 @@ jobs:
         # https://github.com/RalfG/python-wheels-manylinux-build/issues/26
         LD_LIBRARY_PATH: /usr/local/lib:${{ env.LD_LIBRARY_PATH }}
       if: "matrix.os == 'ubuntu-latest'"
+    - name: Publish (Linux)
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: |
+        # Only include *manylinux* wheels; the other wheels files are built but
+        # rejected by pip.
+        twine upload dist/*manylinux*.whl
+      if: "matrix.os == 'ubuntu-latest'"
+    - name: Publish
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: |
+        twine upload dist/*.whl
+      if: "matrix.os != 'ubuntu-latest'"
+  
+  arm64:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.5', '3.6', '3.7', '3.8', '3.9']
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools wheel twine fastimport
+    - name: Run test suite
+      run: |
+        python -m unittest dulwich.tests.test_suite
     - uses: docker/setup-qemu-action@v1
-      if: runner.os == 'Linux'
       name: Set up QEMU
     - name: Build and publish (Linux aarch64)
       uses: RalfG/python-wheels-manylinux-build@v0.3.3-manylinux2014_aarch64
