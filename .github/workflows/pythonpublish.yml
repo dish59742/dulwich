@@ -47,6 +47,10 @@ jobs:
         # https://github.com/RalfG/python-wheels-manylinux-build/issues/26
         LD_LIBRARY_PATH: /usr/local/lib:${{ env.LD_LIBRARY_PATH }}
       if: "matrix.os == 'ubuntu-latest'"
+    - name: list wheel
+      run: |
+        ls dist/
+      if: "matrix.os == 'ubuntu-latest'"
     - uses: docker/setup-qemu-action@v1
       if: runner.os == 'Linux'
       name: Set up QEMU
@@ -58,10 +62,6 @@ jobs:
         # Temporary fix for LD_LIBRARY_PATH issue. See
         # https://github.com/RalfG/python-wheels-manylinux-build/issues/26
         #LD_LIBRARY_PATH: /usr/local/lib:${{ env.LD_LIBRARY_PATH }}
-      if: "matrix.os == 'ubuntu-latest'"
-    - name: Publish (Linux)
-      run: |
-        ls dist/
       if: "matrix.os == 'ubuntu-latest'"
     - name: Publish (Linux)
       env:
